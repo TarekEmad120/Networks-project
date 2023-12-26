@@ -1,7 +1,11 @@
-1110 A flower
-0000 known as a bloom 
-1000 is the reproductives
-0000 (plants of the division
-0001 The biological function of $/a flower
-0100 usually by providing a mechanism
-0000 $$the union of sperm with eggs.
+0000 aaaa
+0000 b#bbb
+0000 ccc/#c#
+1000 aa
+0100 bb
+0000 cc
+0001 dd
+0010 ee
+0100 ta
+0100 tb
+0100 tc

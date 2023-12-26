@@ -35,6 +35,7 @@ std::vector<std::bitset<4>> bit_errors;
 // creating vector for storing Sequence numbers for receivers
 std::vector<int> SeqNumbers;
 std::vector<int> ErroredFrames;
+std::vector<int> lostFrames;
 
 void Node::initialize()
 {
@@ -56,6 +57,7 @@ void Node::initialize()
     this->highest_indexAT_WS = this->WS - 1;
     this->Seq_Num = 0;
     this->ExpectedFrame = 0;
+    this->sttime =0.0;
     // reading input0.txt
 }
 
@@ -69,6 +71,7 @@ void Node::handleMessage(cMessage *msg)
         Coordinatormsg_Base *cord_msg = check_and_cast<Coordinatormsg_Base *>(msg);
         int st_node = cord_msg->getST_Node();
         int st_time = cord_msg->getST_Time();
+        this->sttime = (double) st_time;
         // TODO - Generated method body
         std::cout << "Node " << this->node_id << " recieved message from coordinator" << std::endl;
         std::cout << "st_node = " << st_node << std::endl;
@@ -101,6 +104,7 @@ void Node::handleMessage(cMessage *msg)
                 // intializing the SeqNumbers vector and the ErrorFrames vector for the receiver
                 SeqNumbers.push_back(0);
                 ErroredFrames.push_back(0);
+                lostFrames.push_back(0);
             }
             file.close();
         }
@@ -118,8 +122,9 @@ void Node::handleMessage(cMessage *msg)
     {
         std::cout << "self message" << std::endl;
         Nodemsg_Base *nmsg = check_and_cast<Nodemsg_Base *>(msg);
+        //checking the seqqnum of the message in lostFrames vector
+        int seqqnum = nmsg->getSeq_Num();
         sendDelayed(nmsg, this->PT + this->TD, "Nodeout");
-        
     }
 
     // checking if the message is ack or nack that we recieved from other node before timeout
@@ -148,6 +153,22 @@ void Node::handleMessage(cMessage *msg)
 
             int seqqnum = nmsg->getAck_Num();
             std::string message = messages[seqqnum];
+            //checking if the seqqnum is in lostFrames vector
+            std::cout<<"lostFrames["<<seqqnum<<"] = "<<lostFrames[seqqnum]<<std::endl;
+            if (lostFrames[seqqnum] > 0)
+            {
+                //check if the messsage is isSelfMessage
+                if (this->tmsg->isSelfMessage())
+                {
+                    //cancel the message
+                    cancelEvent(this->tmsg);
+                }
+                else{return;}
+        
+                
+
+                lostFrames[seqqnum]--;
+            }
 
             int countframe = message.size();
 
@@ -260,8 +281,8 @@ void Node::handleMessage(cMessage *msg)
                 new_message = FLAG + new_message + FLAG;
 
                 // save the sending time in double and get its value from time
-                double sendingtime;
-
+                double sendingtime= (double) this->sttime;
+                this->sttime = 0;
                 double PT = this->PT;
                 double TD = this->TD;
                 double DD = this->DD;
@@ -287,7 +308,9 @@ void Node::handleMessage(cMessage *msg)
                 if (islost == true)
                 {
                     std::string message = messages[this->current_index_toSEND]; 
-                    Nodemsg_Base *nmsg = new Nodemsg_Base("timout");
+                    lostFrames[this->current_index_toSEND]++;
+                    std::cout<<"lostFrames["<<this->current_index_toSEND<<"] = "<<lostFrames[this->current_index_toSEND]<<std::endl;
+                    this->tmsg = new Nodemsg_Base("timout");
                     std::string new_message = "";
                     for (int i = 0; i < message.size(); i++)
                     {
@@ -302,14 +325,14 @@ void Node::handleMessage(cMessage *msg)
                         }
                     }
                     new_message = FLAG + new_message + FLAG;
-                    nmsg->setMycheckbits(Xorbyte);
-                    nmsg->setPayload(new_message.c_str());
+                    this->tmsg->setMycheckbits(Xorbyte);
+                    this->tmsg->setPayload(new_message.c_str());
                     std::cout << "sending message " << new_message << std::endl;
-                    nmsg->setSeq_Num(this->Seq_Num);
+                    this->tmsg->setSeq_Num(this->Seq_Num);
                     Seq_Num++;
-                    nmsg->setM_Type(0);
-                    nmsg->setAck_Num(0);
-                    scheduleAt(simTime() + sendingtime + this->TO, nmsg);
+                    this->tmsg->setM_Type(0);
+                    this->tmsg->setAck_Num(0);
+                    scheduleAt(simTime() + sendingtime + this->TO, this->tmsg);
 
                 }
                 if (islost == false) // if the message is not lost we will send it
@@ -455,16 +478,16 @@ void Node::handleMessage(cMessage *msg)
             }
             std::cout << "SeqNumbers[receivedFrame] = " << SeqNumbers[receivedFrame] << std::endl;
 
-            // if (ErroredFrames[ExpectedFrame] <1)
-            // {
-            //     ErroredFrames[ExpectedFrame]++;
-            //     Nodemsg_Base *nack = new Nodemsg_Base("nack");
-            //     nack->setSeq_Num(0);
-            //     nack->setM_Type(2);
-            //     int ackNum = nmsg->getSeq_Num();
-            //     nack->setAck_Num(ExpectedFrame);
-            //     sendDelayed(nack, this->PT + this->TD, "Nodeout");
-            // }
+            if (ErroredFrames[ExpectedFrame] <1)
+            {
+                ErroredFrames[ExpectedFrame]++;
+                Nodemsg_Base *nack = new Nodemsg_Base("nack");
+                nack->setSeq_Num(0);
+                nack->setM_Type(2);
+                int ackNum = nmsg->getSeq_Num();
+                nack->setAck_Num(ExpectedFrame);
+                sendDelayed(nack, this->PT + this->TD, "Nodeout");
+            }
         }
         else
         {

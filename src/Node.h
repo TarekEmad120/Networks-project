@@ -38,13 +38,15 @@ protected:
   double DD;
   double LP;
   double counter;
+  Nodemsg_Base * tmsg;
   
   int lowest_indexAT_WS;
   int current_index_toSEND;
   int highest_indexAT_WS;
   int Seq_Num;
   int ExpectedFrame;
-
+  int seqnumlost;
+  int nackcheck;
   virtual void initialize();
   virtual void handleMessage(cMessage *msg);
 };
