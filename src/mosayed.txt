@@ -1,0 +1,9 @@
+0000
+3210
+
+
+
+bit 0 is delay
+bit 1 is duplication
+bit 2 is lost
+bit 3 is modification 

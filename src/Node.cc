@@ -72,6 +72,7 @@ void Node::handleMessage(cMessage *msg)
         int st_node = cord_msg->getST_Node();
         int st_time = cord_msg->getST_Time();
         this->sttime = (double) st_time;
+        std::cout<<"sttime = "<<this->sttime<<std::endl;
         // TODO - Generated method body
         std::cout << "Node " << this->node_id << " recieved message from coordinator" << std::endl;
         std::cout << "st_node = " << st_node << std::endl;
@@ -162,12 +163,13 @@ void Node::handleMessage(cMessage *msg)
                 {
                     //cancel the message
                     cancelEvent(this->tmsg);
+                    lostFrames[seqqnum]--;
                 }
                 else{return;}
         
                 
 
-                lostFrames[seqqnum]--;
+                
             }
 
             int countframe = message.size();
@@ -281,14 +283,16 @@ void Node::handleMessage(cMessage *msg)
                 new_message = FLAG + new_message + FLAG;
 
                 // save the sending time in double and get its value from time
-                double sendingtime= (double) this->sttime;
-                this->sttime = 0;
+                double sendingtime=  this->sttime;
+                std::cout<<"sttime = "<<this->sttime<<std::endl;
+                std::cout<<"sendingtime = "<<sendingtime<<std::endl;
+                this->sttime = 0.0;
                 double PT = this->PT;
                 double TD = this->TD;
                 double DD = this->DD;
-                sendingtime = (double)PT + TD + this->counter;
+                sendingtime += (double)PT + TD + this->counter;
                 this->counter += PT; // to add the delay of Processing time between succssive messages
-
+                std::cout << "sendingtime = " << sendingtime << std::endl;
                 bool duplicate = false;
                 bool islost = false;
                 if (bit_error_bitset[0] == 1) // checking for error delay

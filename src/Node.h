@@ -28,7 +28,7 @@ class Node : public cSimpleModule
 {
 protected:
   int node_id;
-  int sttime;
+  double sttime;
   int WS;
   int WR;
   int TO;
@@ -38,15 +38,14 @@ protected:
   double DD;
   double LP;
   double counter;
-  Nodemsg_Base * tmsg;
+  Nodemsg_Base * tmsg;//timeout message
   
   int lowest_indexAT_WS;
   int current_index_toSEND;
   int highest_indexAT_WS;
   int Seq_Num;
   int ExpectedFrame;
-  int seqnumlost;
-  int nackcheck;
+
   virtual void initialize();
   virtual void handleMessage(cMessage *msg);
 };
