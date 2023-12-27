@@ -4,8 +4,7 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "D:/fall23/network/omnetpp-5.7/include",
-                "C:/omnetpp-5.7/include"
+                "D:\\fall23\\Network\\omnet\\omnetpp-5.7\\include"
             ],
             "defines": [
                 "_DEBUG",
@@ -16,7 +15,7 @@
             "cStandard": "c17",
             "cppStandard": "c++17",
             "intelliSenseMode": "windows-gcc-x64",
-            "compilerPath": "C:\\omnetpp-5.7\\tools\\win64\\mingw64\\bin\\x86_64-w64-mingw32-gcc-10.3.0.exe",
+            "compilerPath": "D:\\fall23\\Network\\omnet\\omnetpp-5.7\\tools\\win64\\mingw64\\bin\\x86_64-w64-mingw32-gcc-10.3.0.exe",
             "browse": {
                 "path": [
                     "C:/omnetpp-5.7/include"
